@@ -127,3 +127,7 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# custom
+data/
+2 Image and Video/scripts/PennFudanPed/
