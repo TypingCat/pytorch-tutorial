@@ -10,12 +10,9 @@ import torchvision
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 from torchvision.models.detection.mask_rcnn import MaskRCNNPredictor
 
-# from engine import train_one_epoch, evaluate
-# import utils
-# import transforms as T
-from detection.engine import train_one_epoch, evaluate
-import detection.utils as utils
-import detection.transforms as T
+from engine import train_one_epoch, evaluate
+import utils
+import transforms as T
 
 
 class PennFudanDataset(object):
@@ -106,7 +103,7 @@ def get_model_instance_segmentation(num_classes):
 
 def get_transform(train):
     transforms = []
-    transforms.append(T.ToTensor())
+    transforms.append(T.PILToTensor())
     if train:
         transforms.append(T.RandomHorizontalFlip(0.5))
     return T.Compose(transforms)
@@ -119,8 +116,8 @@ def main():
     # our dataset has two classes only - background and person
     num_classes = 2
     # use our dataset and defined transformations
-    dataset = PennFudanDataset('PennFudanPed', get_transform(train=True))
-    dataset_test = PennFudanDataset('PennFudanPed', get_transform(train=False))
+    dataset = PennFudanDataset('/home/fini/pytorch/2 Image and Video/scripts/PennFudanPed', get_transform(train=True))
+    dataset_test = PennFudanDataset('/home/fini/pytorch/2 Image and Video/scripts/PennFudanPed', get_transform(train=False))
 
     # split the dataset in train and test set
     indices = torch.randperm(len(dataset)).tolist()

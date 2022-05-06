@@ -1,4 +1,6 @@
 # Torchvision object detection finetuning
+> 튜토리얼 코드 유지보수가 되지 않아 실행은 되지 않는다.
+
 사전학습된 모델의 미세조정을 해 보자. `Penn-Fudan Database for Pedestrian Detection and Segmentation`의 Mask R-CNN을 사용한다. 여기에는 170개 이미지와 345개 보행자 인스턴스가 포함되어 있다. 커스텀 데이터셋으로 인스턴트 분류 모델을 학습시킬 것이다.
 
 ``` bash
@@ -46,7 +48,7 @@ class PennFudanDataset(torch.utils.data.Dataset):
 A. 사전훈련된 모델에서 시작하여 마지막 레이어를 미세조정한다.
 B. 모델의 백본을 다른 모델의 것으로 교체한다.
 
-본 튜토리얼에서는 Faster R-CNN에 기반하는 Mask R-CNN을 사용한다. 바운딩 박스와 클래스 점수를 예측하는 모델이다. 위의 각 상황에서 모델을 구성하는 방법을 확인하고, 데이터셋이 작아도 가능한 상황 A로 진행한다.
+본 튜토리얼에서는 Faster R-CNN에 기반하는 Mask R-CNN을 사용한다. 바운딩 박스와 클래스 점수를 예측하는 모델이다. 각 상황에서 모델을 구성하는 방법을 확인하고, 여기서는 데이터셋이 작아도 가능한 상황 A로 진행한다.
 
 ### 상황 A. Finetuning from a pretrained model
 COCO에서 사전훈련된 모델에서 시작하여 특정 클래스에 대한 미세조정을 하는 상황이다. 클래스 수를 변경한 predictor를 다시 정의해서 기존 모델의 predictor와 교체했다.
@@ -94,5 +96,38 @@ def get_model_instance_segmentation(num_classes):
 
 
 ## Putting everything together
-[references/detection](https://github.com/pytorch/vision/tree/main/references/detection)에는 감지모델의 학습과 평가를 단순화하도록 돕는 다양한 함수가 제공된다. 이 폴더를 통째로 복사해서 사용하자.
+[references/detection](https://github.com/pytorch/vision/tree/main/references/detection)에는 감지모델의 학습과 평가를 단순화하도록 돕는 다양한 함수가 제공된다. 이 폴더를 복사해서 사용...해야 하는데, 튜토리얼과 버전 차이가 커서 사용하기 어렵다.
 
+### Testing `forward` method (Optional)
+학습과 추론에서 모델은 (실제로는 더 복잡하지만) 다음과 같이 다룬다.
+
+``` py
+# Model and dataset
+model = torchvision.models.detection.fasterrcnn_resnet50_fpn(pretrained=True)
+dataset = PennFudanDataset(
+    'PennFudanPed', get_transform(train=True))
+data_loader = torch.utils.data.DataLoader(
+    dataset, batch_size=2, shuffle=True, num_workers=4,
+    collate_fn=utils.collate_fn)
+
+# For Training
+images, targets = next(iter(data_loader))
+images = list(image for image in images)
+targets = [{k: v for k, v in t.items()} for t in targets]
+output = model(images, targets)  # Returns losses and detections
+
+# For inference
+model.eval()
+x = [torch.rand(3, 300, 400), torch.rand(3, 500, 400)]
+predictions = model(x)           # Returns predictions
+```
+
+실제 메인함수는 다음과 같이 진행된다.
+
+1. 장치 설정
+2. 학습용/평가용 데이터셋 구성
+3. 데이터셋에 데이터로더 연결
+4. 모델 구성(헬퍼 함수 사용)
+5. 모델을 장치에 연결
+6. Optimizer 구성
+7. 10 에포크 학습, 각 에포크마다 평가
