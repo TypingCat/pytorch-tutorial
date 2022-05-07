@@ -9,20 +9,19 @@ $ pip install --user pycocotools
 
 
 ## Defining the Dataset
-참조 스크립트는 커스텀 데이터셋을 추가하기 쉽다. 데이터셋은 `torch.utils.data.Dataset` 클래스를 상속해야 하며, 함수 `__len__`/`__getitem__`을 구현해야 한다. 특히 `__getitem__`은 이하를 반환해야 한다.
+커스텀 데이터셋은 `torch.utils.data.Dataset` 클래스를 상속해야 하며, 함수 `__len__`과 `__getitem__`을 구현해야 한다. 특히 `__getitem__`은 이하를 반환해야 한다.
 
 - image: 크기 (H, W)인 PIL(Python Imaging Library) 이미지
 - target: 이하의 필드를 갖는 딕셔너리
     - boxes: 바운딩 박스의 모서리 좌표 (x0, y0, x1, y1), FloatTensor[N, 4]
-    - labels: 각 박스의 레이블, Int64Ternsor[N]
+    - labels: 각 박스의 레이블, Int64Ternsor[N], 배경 레이블은 0으로 약속되어 있다.
     - image_id: 이미지 식별자, Int64Tensor[1]
     - area: 바운딩 박스의 면적, Tensor[N]
     - iscrowd: 복수의 객체가 포함되었는지 여부, 평가 시 제외, UInt8Tensor[N]
     - (optionally) masks: 각 객체에 대한 분류 마스크, UInt8Tensor[N, H, W]
     - (optionally) keypoints: 각 객체에 대한 K개 키포인트 (x, y, visibility), FloatTensor[N, K, 3]
 
-- 배경 레이블은 0으로 약속되어 있다.
-- 종횡비가 비슷한 이미지들로 배치를 구성하려면 함수 `get_height_and_width`를 추가해야 한다.
+종횡비가 비슷한 이미지들로 배치를 구성하려면 함수 `get_height_and_width`를 추가해야 한다.
 
 ### Writing a custom dataset for PennFudan
 PennFudan 파일을 [다운로드](https://www.cis.upenn.edu/~jshi/ped_html/PennFudanPed.zip)하자. 그리고 여기에 맞는 데이터셋을 작성한다.
@@ -30,28 +29,27 @@ PennFudan 파일을 [다운로드](https://www.cis.upenn.edu/~jshi/ped_html/Penn
 ``` py
 class PennFudanDataset(torch.utils.data.Dataset):
     def __init__(self, root, transforms):
-        ...
+        ...                 # 파일 경로 설정
 
     def __getitem__(self, idx):
         ...
-        return img, target
+        return img, target  # 인덱스에 해당하는 이미지와 타겟 반환
 
     def __len__(self):
-        ...
         return len(self.imgs)
 ```
 
 
 ## Defining your model
-기존 모델을 수정하는 상황은 일반적으로 다음과 같다.
+본 튜토리얼에서는 Faster R-CNN에 기반하는 Mask R-CNN을 사용한다. 이미지로부터 바운딩 박스와 클래스 점수를 예측하는 모델이다. 기존 모델을 수정하는 상황은 일반적으로 다음과 같다.
 
 A. 사전훈련된 모델에서 시작하여 마지막 레이어를 미세조정한다.
 B. 모델의 백본을 다른 모델의 것으로 교체한다.
 
-본 튜토리얼에서는 Faster R-CNN에 기반하는 Mask R-CNN을 사용한다. 바운딩 박스와 클래스 점수를 예측하는 모델이다. 각 상황에서 모델을 구성하는 방법을 확인하고, 여기서는 데이터셋이 작아도 가능한 상황 A로 진행한다.
+각 상황에서 모델을 구성하는 방법을 확인하자. 그리고 데이터셋이 작아도 가능한 상황 A로 진행한다.
 
 ### 상황 A. Finetuning from a pretrained model
-COCO에서 사전훈련된 모델에서 시작하여 특정 클래스에 대한 미세조정을 하는 상황이다. 클래스 수를 변경한 predictor를 다시 정의해서 기존 모델의 predictor와 교체했다.
+COCO 데이터셋으로 사전훈련된 모델에서 시작하여 특정 클래스에 대한 미세조정을 하는 상황이다. 클래스 수를 변경한 predictor를 다시 정의해서 기존 모델의 predictor와 교체했다.
 
 ``` py
 model = torchvision.models.detection.fasterrcnn_resnet50_fpn(pretrained=True)
