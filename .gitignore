@@ -131,4 +131,4 @@ dmypy.json
 # custom
 .pth
 data/
-2 Image and Video/scripts/PennFudanPed/
+PennFudanPed/

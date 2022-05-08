@@ -6,15 +6,6 @@ import numpy as np
 import torch
 from PIL import Image
 
-import torchvision
-from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
-from torchvision.models.detection.mask_rcnn import MaskRCNNPredictor
-
-from engine import train_one_epoch, evaluate
-import utils
-import transforms as T
-
-
 class PennFudanDataset(object):
     def __init__(self, root, transforms):
         self.root = root
@@ -81,6 +72,11 @@ class PennFudanDataset(object):
     def __len__(self):
         return len(self.imgs)
 
+
+import torchvision
+from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
+from torchvision.models.detection.mask_rcnn import MaskRCNNPredictor
+
 def get_model_instance_segmentation(num_classes):
     # load an instance segmentation model pre-trained pre-trained on COCO
     model = torchvision.models.detection.maskrcnn_resnet50_fpn(pretrained=True)
@@ -100,6 +96,7 @@ def get_model_instance_segmentation(num_classes):
 
     return model
 
+import transforms as T
 
 def get_transform(train):
     transforms = []
@@ -108,6 +105,8 @@ def get_transform(train):
         transforms.append(T.RandomHorizontalFlip(0.5))
     return T.Compose(transforms)
 
+from engine import train_one_epoch, evaluate
+import utils
 
 def main():
     # train on the GPU or on the CPU, if a GPU is not available
