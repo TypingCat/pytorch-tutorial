@@ -5,6 +5,10 @@
 2. Image and Video
     - [TorchVision Object Detection Finetuning Tutorial](https://pytorch.org/tutorials/intermediate/torchvision_tutorial.html)
     - [Transfer Learning for Computer Vision Tutorial](https://pytorch.org/tutorials/beginner/transfer_learning_tutorial.html)
+    - [Adversarial Example Generation](https://pytorch.org/tutorials/beginner/fgsm_tutorial.html)
+    - [DCGAN Tutorial](https://pytorch.org/tutorials/beginner/dcgan_faces_tutorial.html)
+    - [Spatial Transformer Networks Tutorial](https://pytorch.org/tutorials/intermediate/spatial_transformer_tutorial.html)
+    - [Optimizing Vision Transformer Model for Deployment](https://pytorch.org/tutorials/beginner/vt_tutorial.html)
 
 
 ## 환경
