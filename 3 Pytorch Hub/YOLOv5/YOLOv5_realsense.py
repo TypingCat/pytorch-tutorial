@@ -1,5 +1,3 @@
-# https://github.com/IntelRealSense/librealsense/blob/master/wrappers/python/examples/opencv_viewer_example.py
-
 import pyrealsense2 as rs
 import numpy as np
 import cv2
@@ -32,26 +30,17 @@ if __name__ == '__main__':
             color_frame = frames.get_color_frame()
             if not color_frame:
                 continue
-
-            # Convert images to numpy arrays
-            color_image = np.asanyarray(color_frame.get_data())
+            color_image = np.asanyarray(color_frame.get_data()) # Convert images to numpy arrays
             
-            results = model(color_image)
-            
-            
-            # b = results.display()
-            # c = results.print()
-            # d = results.render()
-            # e = results.tolist()
-            
-            
+            # Object detection
+            results = model(color_image)           
 
             # Show images
+            results.render()    # Update result image with boxes and labels
             cv2.namedWindow('RealSense', cv2.WINDOW_AUTOSIZE)
-            cv2.imshow('RealSense', results.render())
+            cv2.imshow('RealSense', results.imgs[0])
             if cv2.waitKey(1) & 0xFF == 27:     # Escape when ESC pressed
                 break
-
     finally:
         pipeline.stop()
     
