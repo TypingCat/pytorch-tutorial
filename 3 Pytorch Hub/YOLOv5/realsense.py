@@ -30,15 +30,15 @@ if __name__ == '__main__':
             color_frame = frames.get_color_frame()
             if not color_frame:
                 continue
-            color_image = np.asanyarray(color_frame.get_data()) # Convert images to numpy arrays
             
             # Object detection
+            color_image = np.asanyarray(color_frame.get_data()) # Convert images to numpy arrays
             results = model(color_image)           
 
             # Show images
             results.render()    # Update result image with boxes and labels
-            cv2.namedWindow('RealSense', cv2.WINDOW_AUTOSIZE)
-            cv2.imshow('RealSense', results.imgs[0])
+            cv2.namedWindow('YOLO', cv2.WINDOW_AUTOSIZE)
+            cv2.imshow('YOLO', results.imgs[0])
             if cv2.waitKey(1) & 0xFF == 27:     # Escape when ESC pressed
                 break
     finally:
